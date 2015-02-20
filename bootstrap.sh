@@ -8,7 +8,7 @@ echo 'Installing nginx...'
 yum install -y -q http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
 yum install -y -q nginx git
 
-# TIMESTAMP=$(date +%F_%H-%M-%S)
+mkdir ~/backups &> /dev/null
 TIMESTAMP=$(date +%F)
 if [ ! -d ~/nginx-$TIMESTAMP ]; then
 	cp -a /etc/nginx ~/backups/nginx-$TIMESTAMP
