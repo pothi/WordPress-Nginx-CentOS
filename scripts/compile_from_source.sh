@@ -274,8 +274,10 @@ if [ -f "$PID_PATH" ]; then
 	fi
 fi
 
-echo 'Starting the new Nginx server...'
+# create a log directory
 mkdir /var/log/$NGX_BIN &> /dev/null
+
+echo 'Starting the new Nginx server...'
 sudo $NGX_BIN -t && sudo $NGX_BIN
 if [ "$?" != '0' ]; then
 	echo 'Could not start the new Nginx binary'
