@@ -19,7 +19,7 @@ Please backup the existing configuration files...
 ```bash
 mkdir ~/scripts &> /dev/null
 
-curl -Sso ~/scripts/bootstrap-ngx.sh https://raw.githubusercontent.com/pothi/WordPress-Nginx-CentOS/master/bootstrap.sh
+curl -Sso ~/scripts/bootstrap-ngx.sh https://raw.githubusercontent.com/pothi/WordPress-Nginx-CentOS/master/scripts/bootstrap.sh
 chmod +x ~/scripts/bootstrap-ngx.sh
 
 # vi ~/scripts/bootstrap-ngx.sh
