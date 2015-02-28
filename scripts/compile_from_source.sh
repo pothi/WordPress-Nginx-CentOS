@@ -8,64 +8,66 @@
 ### VARIABLES ###
 # Please know that this script requires __sudo__ privileges.
 
-# You can get the version number/s at http://nginx.org
+# Obtain the latest version number at http://nginx.org
 NGX_VER="1.6.2"
 
-# username underwhich nginx would run. make sure it has read permission on all sites
+# username underwhich nginx binary would run. make sure it has read permission on all sites
 NGX_USER="nginx"
 NGX_GROUP="nginx"
 
-# The following modules are automatically compiled in unless explicitly disabled
-# if you don't want any of these, please disable them by changing "no" to "yes"
-# you do not want to disable any of these, unless you know what you are doing
-DISABLE_HTTP_CORE_MODULE="no"
-DISABLE_HTTP_ACCESS_MODULE="no"
-DISABLE_HTTP_AUTH_BASIC_MODULE="no"
-DISABLE_HTTP_AUTOINDEX_MODULE="no"
-DISABLE_HTTP_BROWSER_MODULE="no"
-DISABLE_HTTP_CHARSET_MODULE="no"
-DISABLE_HTTP_EMPTY_GIF_MODULE="no"
-DISABLE_HTTP_FASTCGI_MODULE="no"
-DISABLE_HTTP_GEO_MODULE="no"
-DISABLE_HTTP_GZIP_MODULE="no"
-DISABLE_HTTP_LIMIT_REQ_MODULE="no"
-DISABLE_HTTP_LIMIT_CONN_MODULE="no"
-DISABLE_HTTP_MAP_MODULE="no"
-DISABLE_HTTP_MEMCACHED_MODULE="no"
-DISABLE_HTTP_PROXY_MODULE="no"
-DISABLE_HTTP_REFERER_MODULE="no"
-DISABLE_HTTP_REWRITE_MODULE="no"
-DISABLE_HTTP_SCGI_MODULE="yes"
-DISABLE_HTTP_SPLIT_CLIENTS_MODULE="no"
-DISABLE_HTTP_SSI_MODULE="no"
-DISABLE_HTTP_UPSTREAM_MODULE="no"
-DISABLE_HTTP_USERID_MODULE="no"
-DISABLE_HTTP_UWSGI_MODULE="no"
+# The following modules are automatically compiled in, unless explicitly disabled
+# Just to get started quickly, some of these modules are disabled explicitly below
+KEEP_HTTP_CORE_MODULE="yes"
+KEEP_HTTP_ACCESS_MODULE="yes"
+KEEP_HTTP_AUTH_BASIC_MODULE="yes"
+KEEP_HTTP_AUTOINDEX_MODULE="yes"
+KEEP_HTTP_BROWSER_MODULE="yes"
+KEEP_HTTP_CHARSET_MODULE="yes"
+KEEP_HTTP_EMPTY_GIF_MODULE="no"
+KEEP_HTTP_FASTCGI_MODULE="yes"
+KEEP_HTTP_GEO_MODULE="yes"
+KEEP_HTTP_GZIP_MODULE="yes"
+KEEP_HTTP_LIMIT_REQ_MODULE="no"
+KEEP_HTTP_LIMIT_CONN_MODULE="no"
+KEEP_HTTP_MAP_MODULE="yes"
+KEEP_HTTP_MEMCACHED_MODULE="yes"
+KEEP_HTTP_PROXY_MODULE="yes"
+KEEP_HTTP_REFERER_MODULE="yes"
+KEEP_HTTP_REWRITE_MODULE="yes"
+KEEP_HTTP_SCGI_MODULE="no"
+KEEP_HTTP_SPLIT_CLIENTS_MODULE="no"
+KEEP_HTTP_SSI_MODULE="no"
+KEEP_HTTP_UPSTREAM_MODULE="yes"
+KEEP_HTTP_USERID_MODULE="no"
+KEEP_HTTP_UWSGI_MODULE="no"
 
-# In the following lines, if you require a particular module, please choose yes
-# If a module is already selected and if you don't want it, please choose no
-# also update the version numbers, whenever available
-# if no version number is available for a particular module, it is a built-in module or a feature
-INCLUDE_DEBUG_MODULE="no"
+# The following modules are not enabled by default.
+# Some are enabled, just to show as an example
+ADD_DEBUG_MODULE="yes"
 
-INCLUDE_HTTP_GZIP_STATIC_MODULE="yes"
-INCLUDE_HTTP_SPDY_MODULE="yes"
-INCLUDE_HTTP_SSL_MODULE="yes"
-INCLUDE_HTTP_SUB_MODULE="yes"
+# ADD_HTTP_ADDITION_MODULE="no"
+ADD_HTTP_GZIP_STATIC_MODULE="yes"
+ADD_HTTP_SPDY_MODULE="yes"
+ADD_HTTP_SSL_MODULE="yes"
+ADD_HTTP_SUB_MODULE="yes"
+# more to follow TODO
 
-INCLUDE_PAGESPEED_MODULE="no"
-VERSION_PAGESPEED_MODULE="1.7.30.1"
+# Third-party modules - require version number info
+ADD_PAGESPEED_MODULE="yes"
+# Obtain the latest version from https://github.com/pagespeed/ngx_pagespeed/releases
+NGINX_PAGESPEED_MODULE_VERSION="1.9.32.3"
+# more to follow TODO
 
-# You may change the name of the nginx binary here so avoid conflicts with the existing binary
+# You may change the name of the nginx binary here so avoid conflicts with the existing binary, if any
 NGX_BIN="nginx_c"
-PID_PATH="/var/run/$NGX_BIN.pid"
 
+# Are you compiling this on a high traffic *live* site. Save your ass by keeping this option.
 HIGH_TRAFFIC_SITE="yes"
 
 #-------- END OF VARIABLES ----------#
 
-# This may change, depending on your requirement.
-# The following _may_ fit most use-cases
+PID_PATH="/var/run/$NGX_BIN.pid"
+
 # Ref: http://nginx.org/en/docs/configure.html
 BASE_CONFIG_OPTIONS="
                         --prefix=/usr/local/$NGX_BIN-$NGX_VER
@@ -83,122 +85,139 @@ BASE_CONFIG_OPTIONS="
 CONFIG_OPTIONS=$BASE_CONFIG_OPTIONS
 
 # Modules enabled by default
-if [ $DISABLE_HTTP_CORE_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_CORE_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_core_module"
 fi
 
-if [ $DISABLE_HTTP_ACCESS_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_ACCESS_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_access_module"
 fi
 
-if [ $DISABLE_HTTP_AUTH_BASIC_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_AUTH_BASIC_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_auth_basic_module"
 fi
 
-if [ $DISABLE_HTTP_AUTOINDEX_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_AUTOINDEX_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_autoindex_module"
 fi
 
-if [ $DISABLE_HTTP_BROWSER_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_BROWSER_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_browser_module"
 fi
 
-if [ $DISABLE_HTTP_CHARSET_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_CHARSET_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_charset_module"
 fi
 
-if [ $DISABLE_HTTP_EMPTY_GIF_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_EMPTY_GIF_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_empty_gif_module"
 fi
 
-if [ $DISABLE_HTTP_FASTCGI_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_FASTCGI_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_fastcgi_module"
 fi
 
-if [ $DISABLE_HTTP_GEO_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_GEO_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_geo_module"
 fi
 
-if [ $DISABLE_HTTP_GZIP_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_GZIP_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_gzip_module"
 fi
 
-if [ $DISABLE_HTTP_LIMIT_REQ_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_LIMIT_REQ_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_limit_req_module"
 fi
 
-if [ $DISABLE_HTTP_LIMIT_CONN_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_LIMIT_CONN_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_limit_conn_module"
 fi
 
-if [ $DISABLE_HTTP_MAP_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_MAP_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_map_module"
 fi
 
-if [ $DISABLE_HTTP_MEMCACHED_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_MEMCACHED_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_memcached_module"
 fi
 
-if [ $DISABLE_HTTP_PROXY_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_PROXY_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_proxy_module"
 fi
 
-if [ $DISABLE_HTTP_REFERER_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_REFERER_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_referer_module"
 fi
 
-if [ $DISABLE_HTTP_REWRITE_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_REWRITE_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_rewrite_module"
 fi
 
-if [ $DISABLE_HTTP_SCGI_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_SCGI_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_scgi_module"
 fi
 
-if [ $DISABLE_HTTP_SPLIT_CLIENTS_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_SPLIT_CLIENTS_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_split_clients_module"
 fi
 
-if [ $DISABLE_HTTP_SSI_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_SSI_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_ssi_module"
 fi
 
-if [ $DISABLE_HTTP_UPSTREAM_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_UPSTREAM_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_upstream_ip_hash_module --without-http_upstream_least_conn_module --without-http_upstream_keepalive_module"
 fi
 
-if [ $DISABLE_HTTP_USERID_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_USERID_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_userid_module"
 fi
 
-if [ $DISABLE_HTTP_UWSGI_MODULE == 'yes' ]; then
+if [ $KEEP_HTTP_UWSGI_MODULE == 'no' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --without-http_uwsgi_module"
 fi
 
-# Modules disabled by default
-if [ $INCLUDE_DEBUG_MODULE == 'yes' ]; then
+# Modules KEEPd by default
+if [ $ADD_DEBUG_MODULE == 'yes' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --with-debug"
 fi
 
-if [ $INCLUDE_HTTP_GZIP_STATIC_MODULE == 'yes' ]; then
+if [ $ADD_HTTP_GZIP_STATIC_MODULE == 'yes' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --with-http_gzip_static_module"
 fi
 
-if [ $INCLUDE_HTTP_SPDY_MODULE == 'yes' ]; then
+if [ $ADD_HTTP_SPDY_MODULE == 'yes' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --with-http_spdy_module"
 fi
 
-if [ $INCLUDE_HTTP_SSL_MODULE == 'yes' ]; then
+if [ $ADD_HTTP_SSL_MODULE == 'yes' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --with-http_ssl_module"
 fi
 
-if [ $INCLUDE_HTTP_SUB_MODULE == 'yes' ]; then
+if [ $ADD_HTTP_SUB_MODULE == 'yes' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --with-http_sub_module"
 fi
 
 # Third-party modules
-if [ $INCLUDE_PAGESPEED_MODULE == 'yes' ]; then
-	CONFIG_OPTIONS="$CONFIG_OPTIONS --add-module=ngx_pagespeed-release-${VERSION_PAGESPEED_MODULE}-beta"
+if [ $ADD_PAGESPEED_MODULE == 'yes' ]; then
+	NGX_PSS_VER=${NGINX_PAGESPEED_MODULE_VERSION}
+	CONFIG_OPTIONS="$CONFIG_OPTIONS --add-module=$HOME/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta"
+	# Ref: https://developers.google.com/speed/pagespeed/module/build_ngx_pagespeed_from_source
+	sudo yum install -y gcc-c++ pcre-dev pcre-devel zlib-devel make unzip
+	if [ "$?" != '0' ]; then
+		echo 'Could not install dependencies'
+		echo 'Do you have sudo privilege?'
+		exit 1
+	fi
+
+	# download ngx_pss
+	echo 'Hold on while downloading PageSpeed module...'
+	wget -q -O ~/src/release-${NGX_PSS_VER}-beta.zip https://github.com/pagespeed/ngx_pagespeed/archive/release-${NGX_PSS_VER}-beta.zip &> /dev/null
+	unzip -q -d ~/src/ ~/src/release-${NGX_PSS_VER}-beta.zip
+	rm ~/src/release-${NGX_PSS_VER}-beta.zip &> /dev/null
+	wget -q -O ~/src/${NGX_PSS_VER}.tar.gz  https://dl.google.com/dl/page-speed/psol/${NGX_PSS_VER}.tar.gz &> /dev/null
+	tar -C ~/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta -xzf ~/src/${NGX_PSS_VER}.tar.gz
+	rm ~/src/${NGX_PSS_VER}.tar.gz &> /dev/null
 fi
 
 # Pre-requisites to compile Nginx from source
@@ -258,13 +277,26 @@ if [ "$?" != '0' ]; then
 	exit 1
 fi
 
-rm -rf $COMPILE_DIR
+rm -rf $COMPILE_DIR &> /dev/null
+rm -rf ~/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta &> /dev/null
+
+echo 'The new Nginx binary is ready'
+echo 'Start it with "sudo '$NGX_BIN' -t && sudo '$NGX_BIN''
+echo 'The above command would verify the conf at /etc/'$NGX_BIN'/nginx.conf and then would start as a daemon'
+echo 'If an existing binary is already running and if you are doing this on a high traffic live site, save your ass by referring http://wiki.nginx.org/CommandLine#Upgrading_To_a_New_Binary_On_The_Fly to upgrade a new binary on the fly!'
+echo 'If you do not mind some downtime for your visitors, stop the existing Nginx binary and then run the above command to start again'
+echo 'Happy hosting!'
+
+exit 0
+
+# The following code will be removed at a latest stage and has no meaning beyond the previous command (exit 0)
 
 if [ $HIGH_TRAFFIC_SITE == 'yes' ]; then
-	echo 'The new Nginx binary is ready. Since, you have high traffic site, ref... http://wiki.nginx.org/CommandLine#Upgrading_To_a_New_Binary_On_The_Fly to understand how to upgrade to this new binary on the fly!'
+	echo 'The new Nginx binary is ready. Ref... http://wiki.nginx.org/CommandLine#Upgrading_To_a_New_Binary_On_The_Fly to upgrade a new binary on the fly!'
 	exit 0
 fi
 
+# If you have high traffic site, ref... http://wiki.nginx.org/CommandLine#Upgrading_To_a_New_Binary_On_The_Fly
 if [ -f "$PID_PATH" ]; then
 	echo 'Stopping the existing Nginx server...'
 	sudo $NGX_BIN -s stop
@@ -274,10 +306,8 @@ if [ -f "$PID_PATH" ]; then
 	fi
 fi
 
-# create a log directory
-mkdir /var/log/$NGX_BIN &> /dev/null
-
 echo 'Starting the new Nginx server...'
+mkdir /var/log/$NGX_BIN &> /dev/null
 sudo $NGX_BIN -t && sudo $NGX_BIN
 if [ "$?" != '0' ]; then
 	echo 'Could not start the new Nginx binary'
