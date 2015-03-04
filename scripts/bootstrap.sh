@@ -5,25 +5,27 @@
 # Ref: http://nginx.org/en/linux_packages.html#stable
 
 echo 'Installing nginx...'
-yum update -y -q
-yum install -y -q http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
-yum install -y -q nginx git
-yum clean all
+sudo yum update -y -q
+sudo yum install -y -q http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm
+sudo yum install -y -q nginx git
+sudo yum clean all
 
 mkdir ~/backups &> /dev/null
 TIMESTAMP=$(date +%F)
 if [ ! -d ~/nginx-$TIMESTAMP ]; then
-	cp -a /etc/nginx ~/backups/nginx-$TIMESTAMP
+	sudo cp -a /etc/nginx ~/backups/nginx-$TIMESTAMP
 fi
 
-git clone git://github.com/pothi/WordPress-Nginx-CentOS.git ~/ngx
-cp -a ~/ngx/{conf.d,globals,sites-available,sites-enabled} /etc/nginx/
+git clone https://github.com/pothi/WordPress-Nginx-CentOS.git ~/ngx
+sudo cp -a ~/ngx/{conf.d,globals,sites-available,sites-enabled} /etc/nginx/
 
 if [ ! -f /etc/nginx/fastcgi_params ]; then
-	cp ~/ngx/fastcgi_params /etc/nginx
+	sudo cp ~/ngx/fastcgi_params /etc/nginx
 fi
 
-nginx -t
+rm -rf ~/ngx &> /dev/null
+
+sudo nginx -t
 
 # Other steps that varies depending on your particular requirement:
 # YOUR_DOMAIN_NAME=tinywp.com
