@@ -8,15 +8,14 @@
 ### VARIABLES ###
 # Please know that this script requires __sudo__ privileges.
 
-# Obtain the latest version number at http://nginx.org
+# You can get the version number/s at http://nginx.org
 NGX_VER="1.6.2"
 
-# username underwhich nginx binary would run. make sure it has read permission on all sites
+# username underwhich nginx would run. make sure it has read permission on all sites
 NGX_USER="nginx"
 NGX_GROUP="nginx"
 
-# The following modules are automatically compiled in, unless explicitly disabled
-# Just to get started quickly, some of these modules are disabled explicitly below
+# The following modules are automatically compiled in unless explicitly disabled
 KEEP_HTTP_CORE_MODULE="yes"
 KEEP_HTTP_ACCESS_MODULE="yes"
 KEEP_HTTP_AUTH_BASIC_MODULE="yes"
@@ -42,21 +41,21 @@ KEEP_HTTP_USERID_MODULE="no"
 KEEP_HTTP_UWSGI_MODULE="no"
 
 # The following modules are not enabled by default.
-# Some are enabled, just to show as an example
 ADD_DEBUG_MODULE="yes"
 
-# ADD_HTTP_ADDITION_MODULE="no"
 ADD_HTTP_GZIP_STATIC_MODULE="yes"
 ADD_HTTP_SPDY_MODULE="yes"
 ADD_HTTP_SSL_MODULE="yes"
 ADD_HTTP_SUB_MODULE="yes"
-# more to follow TODO
 
-# Third-party modules - require version number info
-ADD_PAGESPEED_MODULE="yes"
-# Obtain the latest version from https://github.com/pagespeed/ngx_pagespeed/releases
+### Third-party modules - require version number info
+ADD_PAGESPEED_MODULE="no"
+# Version info at https://github.com/pagespeed/ngx_pagespeed/releases
 NGINX_PAGESPEED_MODULE_VERSION="1.9.32.3"
-# more to follow TODO
+
+ADD_ECHO_MODULE="no"
+# Version info at http://wiki.nginx.org/HttpEchoModule
+NGINX_ECHO_MODULE_VERSION="0.57"
 
 # You may change the name of the nginx binary here so avoid conflicts with the existing binary, if any
 NGX_BIN="nginx_c"
@@ -198,8 +197,10 @@ if [ $ADD_HTTP_SUB_MODULE == 'yes' ]; then
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --with-http_sub_module"
 fi
 
-# Third-party modules
+#-- Third-party modules
 if [ $ADD_PAGESPEED_MODULE == 'yes' ]; then
+	# Remove any existing files
+	# rm -rf ~/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta &> /dev/null
 	NGX_PSS_VER=${NGINX_PAGESPEED_MODULE_VERSION}
 	CONFIG_OPTIONS="$CONFIG_OPTIONS --add-module=$HOME/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta"
 	# Ref: https://developers.google.com/speed/pagespeed/module/build_ngx_pagespeed_from_source
@@ -211,16 +212,36 @@ if [ $ADD_PAGESPEED_MODULE == 'yes' ]; then
 	fi
 
 	# download ngx_pss
-	echo 'Hold on while downloading PageSpeed module...'
-	wget -q -O ~/src/release-${NGX_PSS_VER}-beta.zip https://github.com/pagespeed/ngx_pagespeed/archive/release-${NGX_PSS_VER}-beta.zip &> /dev/null
-	unzip -q -d ~/src/ ~/src/release-${NGX_PSS_VER}-beta.zip
-	rm ~/src/release-${NGX_PSS_VER}-beta.zip &> /dev/null
-	wget -q -O ~/src/${NGX_PSS_VER}.tar.gz  https://dl.google.com/dl/page-speed/psol/${NGX_PSS_VER}.tar.gz &> /dev/null
-	tar -C ~/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta -xzf ~/src/${NGX_PSS_VER}.tar.gz
-	rm ~/src/${NGX_PSS_VER}.tar.gz &> /dev/null
+	if [ ! -d "$HOME/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta" ] ; then
+		echo 'Hold on while downloading PageSpeed module...'
+		wget -q -O ~/src/release-${NGX_PSS_VER}-beta.zip https://github.com/pagespeed/ngx_pagespeed/archive/release-${NGX_PSS_VER}-beta.zip &> /dev/null
+		unzip -q -d ~/src/ ~/src/release-${NGX_PSS_VER}-beta.zip
+		rm ~/src/release-${NGX_PSS_VER}-beta.zip &> /dev/null
+		wget -q -O ~/src/${NGX_PSS_VER}.tar.gz  https://dl.google.com/dl/page-speed/psol/${NGX_PSS_VER}.tar.gz &> /dev/null
+		tar -C ~/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta -xzf ~/src/${NGX_PSS_VER}.tar.gz
+		rm ~/src/${NGX_PSS_VER}.tar.gz &> /dev/null
+	fi
 fi
 
-# Pre-requisites to compile Nginx from source
+if [ $ADD_ECHO_MODULE == 'yes' ]; then
+	# Remove any existing files
+	# rm -rf ~/src/ngx_echo_module &> /dev/null
+
+	if [ ! -d "$HOME/src/ngx_echo_module" ] ; then
+		echo 'Downloading echo module'
+		wget -q -O ~/src/ngx_echo_module.tar.gz https://github.com/openresty/echo-nginx-module/archive/v${NGINX_ECHO_MODULE_VERSION}.tar.gz
+		if [ "$?" != '0' ]; then
+			echo 'Could not download echo module'
+			exit 1
+		fi
+		tar -C ~/src/ -xzf ~/src/ngx_echo_module.tar.gz
+		rm ~/src/ngx_echo_module.tar.gz
+	fi
+
+	CONFIG_OPTIONS="$CONFIG_OPTIONS --add-module=$HOME/src/echo-nginx-module-${NGINX_ECHO_MODULE_VERSION}"
+fi
+
+#-- Pre-requisites to compile Nginx from source
 # Debian DEPENDENCIES="gcc make libpcre3-dev zlib1g-dev libssl-dev libgeoip-dev"
 DEPENDENCIES="gcc gcc-c++ make pcre-devel zlib-devel openssl-devel GeoIP-devel"
 sudo yum install -y $DEPENDENCIES
@@ -240,18 +261,23 @@ if ! id -u $NGX_USER &> /dev/null ; then
 	fi
 fi
 
-COMPILE_DIR=$HOME/src/nginx-$(date +%F_%H-%M-%S)
+# COMPILE_DIR=$HOME/src/nginx-$(date +%F_%H-%M-%S)
+COMPILE_DIR=$HOME/src/nginx-$(date +%F)
 mkdir -p $COMPILE_DIR &> /dev/null
 cd $COMPILE_DIR &> /dev/null
 
-echo 'Hold on! Downloading Nginx...'
-wget -q http://nginx.org/download/nginx-$NGX_VER.tar.gz
-tar xzf nginx-$NGX_VER.tar.gz && rm -f nginx-$NGX_VER.tar.gz; cd nginx-$NGX_VER
-if [ "$?" != '0' ] ; then
-	echo 'Could not download Nginx from nginx.org'
-	exit 1
+if [ ! -d "$HOME/src/nginx-$(date +%F)/nginx-$NGX_VER" ] ; then
+	echo 'Hold on! Downloading Nginx...'
+	wget -q http://nginx.org/download/nginx-$NGX_VER.tar.gz
+	tar -C $COMPILE_DIR -xzf nginx-$NGX_VER.tar.gz
+	if [ "$?" != '0' ] ; then
+		echo 'Could not download Nginx from nginx.org'
+		exit 1
+	fi
+	rm -f nginx-$NGX_VER.tar.gz; cd nginx-$NGX_VER
 fi
 
+cd $COMPILE_DIR/nginx-$NGX_VER
 echo 'Please wait! Configuring Nginx!'
 echo $CONFIG_OPTIONS
 ./configure $CONFIG_OPTIONS &> /dev/null
@@ -277,8 +303,10 @@ if [ "$?" != '0' ]; then
 	exit 1
 fi
 
+#-- Remove source files
 rm -rf $COMPILE_DIR &> /dev/null
 rm -rf ~/src/ngx_pagespeed-release-${NGX_PSS_VER}-beta &> /dev/null
+rm -rf ~/src/echo-nginx-module-${NGINX_ECHO_MODULE_VERSION} &> /dev/null
 
 echo 'The new Nginx binary is ready'
 echo 'Start it with "sudo '$NGX_BIN' -t && sudo '$NGX_BIN''
